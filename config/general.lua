@@ -3,7 +3,7 @@ return {
    automatically_reload_config = true,
    check_for_updates = false,
    -- exit_behavior = 'CloseOnCleanExit', -- if the shell program exited with a successful status
-   exit_behavior = 'Hold', -- if the shell program exited with a successful status
+   exit_behavior = 'CloseOnCleanExit', -- if the shell program exited with a successful status
 
    status_update_interval = 1000,
 
