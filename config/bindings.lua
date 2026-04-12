@@ -54,6 +54,14 @@ local keys = {
             CaseInSensitiveString = ''
         })
     },
+    {
+        key = '/',
+        mods = mod.SUPER .. '|SHIFT',
+        action = act.ShowLauncherArgs({
+            flags = 'KEY_ASSIGNMENTS',
+            title = '查找快捷键'
+        })
+    },
     -- copy/paste --
     -- { key = 'c', mods = 'CTRL|SHIFT', action = act.CopyTo('Clipboard') },
     -- { key = 'v', mods = 'CTRL|SHIFT', action = act.PasteFrom('Clipboard') },
