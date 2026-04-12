@@ -36,6 +36,11 @@ GpuAdapters.AVAILABLE_BACKENDS = {
 ---@type WeztermGPUAdapter[]
 GpuAdapters.ENUMERATED_GPUS = wezterm.gui.enumerate_gpus()
 
+---@return boolean
+function GpuAdapters:has_enumerated_gpus()
+   return #self.ENUMERATED_GPUS > 0
+end
+
 ---@return GpuAdapters
 ---@private
 function GpuAdapters:init()
@@ -95,7 +100,9 @@ function GpuAdapters:pick_best()
    end
 
    if not adapters_options then
-      wezterm.log_error('No GPU adapters found. Using Default Adapter.')
+      if self:has_enumerated_gpus() then
+         wezterm.log_error('No GPU adapters found. Using Default Adapter.')
+      end
       return nil
    end
 
@@ -118,7 +125,9 @@ function GpuAdapters:pick_manual(backend, device_type)
    local adapters_options = self[device_type]
 
    if not adapters_options then
-      wezterm.log_error('No GPU adapters found. Using Default Adapter.')
+      if self:has_enumerated_gpus() then
+         wezterm.log_error('No GPU adapters found. Using Default Adapter.')
+      end
       return nil
    end
 

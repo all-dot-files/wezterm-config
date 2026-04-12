@@ -4,6 +4,7 @@
 
 local wezterm = require('wezterm')
 local Cells = require('utils.cells')
+local PaneData = require('utils.pane-data')
 local OptsValidator = require('utils.opts-validator')
 
 ---
@@ -152,6 +153,26 @@ local function create_title(process_name, base_title, max_width, inset)
    return title
 end
 
+---@param process_name string
+---@param base_title string
+---@return boolean
+local function should_prefix_process_name(process_name, base_title)
+   if process_name == '' or base_title == '' then
+      return false
+   end
+
+   if base_title == process_name then
+      return false
+   end
+
+   local escaped = process_name:gsub('([^%w])', '%%%1')
+   if base_title:match('^' .. escaped .. '%s') ~= nil then
+      return false
+   end
+
+   return true
+end
+
 ---@param panes any[] WezTerm https://wezfurlong.org/wezterm/config/lua/pane/index.html
 local function check_unseen_output(panes)
    local unseen_output = false
@@ -208,6 +229,9 @@ end
 ---@param max_width number
 function Tab:set_info(event_opts, tab, max_width)
    local process_name = clean_process_name(tab.active_pane.foreground_process_name)
+   local current_command = PaneData.current_command(tab.active_pane)
+   local cwd = PaneData.cwd_info(tab.active_pane)
+   local base_title = current_command or cwd.basename or tab.active_pane.title
 
    self.is_wsl = process_name:match('^wsl') ~= nil
    self.is_admin = (
@@ -229,7 +253,12 @@ function Tab:set_info(event_opts, tab, max_width)
       self.title = create_title('', self.locked_title, max_width, inset)
       return
    end
-   self.title = create_title(process_name, tab.active_pane.title, max_width, inset)
+
+   if not should_prefix_process_name(process_name, base_title) then
+      process_name = ''
+   end
+
+   self.title = create_title(process_name, base_title, max_width, inset)
 end
 
 function Tab:create_cells()
@@ -357,6 +386,7 @@ M.setup = function(opts)
          tab_list[tab.tab_id] = Tab:new()
          tab_list[tab.tab_id]:set_info(valid_opts, tab, max_width)
          tab_list[tab.tab_id]:create_cells()
+         tab_list[tab.tab_id]:update_cells(valid_opts, tab.is_active, hover)
          return tab_list[tab.tab_id]:render()
       end
 

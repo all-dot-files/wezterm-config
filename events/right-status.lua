@@ -1,9 +1,10 @@
 local wezterm = require('wezterm')
 local umath = require('utils.math')
 local Cells = require('utils.cells')
+local PaneData = require('utils.pane-data')
 local OptsValidator = require('utils.opts-validator')
 
----@alias Event.RightStatusOptions { date_format?: string }
+---@alias Event.RightStatusOptions { date_format?: string, cwd_max_width?: integer }
 
 ---Setup options for the right status bar
 local EVENT_OPTS = {}
@@ -15,6 +16,11 @@ EVENT_OPTS.schema = {
       type = 'string',
       default = '%a %H:%M:%S',
    },
+   {
+      name = 'cwd_max_width',
+      type = 'number',
+      default = 32,
+   },
 }
 EVENT_OPTS.validator = OptsValidator:new(EVENT_OPTS.schema)
 
@@ -25,6 +31,9 @@ local M = {}
 
 local ICON_SEPARATOR = nf.oct_dash
 local ICON_DATE = nf.fa_calendar
+local ICON_FOLDER = nf.md_folder
+local ICON_HOST = nf.md_server
+local ICON_TMUX = nf.cod_terminal_tmux or 'tmux'
 
 ---@type string[]
 local discharging_icons = {
@@ -56,6 +65,8 @@ local charging_icons = {
 ---@type table<string, Cells.SegmentColors>
 -- stylua: ignore
 local colors = {
+   cwd       = { fg = '#a6e3a1', bg = 'rgba(0, 0, 0, 0.4)' },
+   host      = { fg = '#89b4fa', bg = 'rgba(0, 0, 0, 0.4)' },
    date      = { fg = '#fab387', bg = 'rgba(0, 0, 0, 0.4)' },
    battery   = { fg = '#f9e2af', bg = 'rgba(0, 0, 0, 0.4)' },
    separator = { fg = '#74c7ec', bg = 'rgba(0, 0, 0, 0.4)' }
@@ -64,9 +75,15 @@ local colors = {
 local cells = Cells:new()
 
 cells
+   :add_segment('cwd_icon', ICON_FOLDER .. '  ', colors.cwd, attr(attr.intensity('Bold')))
+   :add_segment('cwd_text', '', colors.cwd, attr(attr.intensity('Bold')))
+   :add_segment('separator_cwd', ' ' .. ICON_SEPARATOR .. '  ', colors.separator)
+   :add_segment('host_icon', ICON_HOST .. '  ', colors.host, attr(attr.intensity('Bold')))
+   :add_segment('host_text', '', colors.host, attr(attr.intensity('Bold')))
+   :add_segment('separator_host', ' ' .. ICON_SEPARATOR .. '  ', colors.separator)
    :add_segment('date_icon', ICON_DATE .. '  ', colors.date, attr(attr.intensity('Bold')))
    :add_segment('date_text', '', colors.date, attr(attr.intensity('Bold')))
-   :add_segment('separator', ' ' .. ICON_SEPARATOR .. '  ', colors.separator)
+   :add_segment('separator_date', ' ' .. ICON_SEPARATOR .. '  ', colors.separator)
    :add_segment('battery_icon', '', colors.battery)
    :add_segment('battery_text', '', colors.battery, attr(attr.intensity('Bold')))
 
@@ -99,17 +116,40 @@ M.setup = function(opts)
       wezterm.log_error(err)
    end
 
-   wezterm.on('update-right-status', function(window, _pane)
+   wezterm.on('update-right-status', function(window, pane)
       local battery_text, battery_icon = battery_info()
+      local cwd = PaneData.cwd_info(pane)
+      local identity = PaneData.identity(pane)
+      local cwd_text = PaneData.truncate_left(cwd.display_path, valid_opts.cwd_max_width) or 'N/A'
+      local host_text = identity.user and (identity.user .. '@' .. (identity.host or 'localhost'))
+         or (identity.host or wezterm.hostname())
+
+      if identity.in_tmux then
+         host_text = host_text .. ' ' .. ICON_TMUX
+      end
 
       cells
+         :update_segment_text('cwd_text', cwd_text)
+         :update_segment_text('host_text', host_text)
          :update_segment_text('date_text', wezterm.strftime(valid_opts.date_format))
          :update_segment_text('battery_icon', battery_icon)
          :update_segment_text('battery_text', battery_text)
 
       window:set_right_status(
          wezterm.format(
-            cells:render({ 'date_icon', 'date_text', 'separator', 'battery_icon', 'battery_text' })
+            cells:render({
+               'cwd_icon',
+               'cwd_text',
+               'separator_cwd',
+               'host_icon',
+               'host_text',
+               'separator_host',
+               'date_icon',
+               'date_text',
+               'separator_date',
+               'battery_icon',
+               'battery_text',
+            })
          )
       )
    end)

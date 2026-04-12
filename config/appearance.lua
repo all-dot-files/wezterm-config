@@ -3,7 +3,7 @@ local colors = require('colors.custom')
 local gpu_adapters = require('utils.gpu-adapter')
 
 return {
-   term = "xterm-256color",
+   term = "wezterm",
    animation_fps = 60,
    max_fps = 60,
    front_end = 'WebGpu',
@@ -36,6 +36,29 @@ return {
    min_scroll_bar_height = "3cell",
    colors = {
       scrollbar_thumb = '#454545',
+      tab_bar = {
+         background = '#090909',
+         active_tab = {
+            bg_color = '#8dcba5',
+            fg_color = '#11111B',
+         },
+         inactive_tab = {
+            bg_color = '#74C7EC',
+            fg_color = '#1C1B19',
+         },
+         inactive_tab_hover = {
+            bg_color = '#5D87A3',
+            fg_color = '#1C1B19',
+         },
+         new_tab = {
+            bg_color = '#090909',
+            fg_color = '#CDD6F4',
+         },
+         new_tab_hover = {
+            bg_color = '#5D87A3',
+            fg_color = '#1C1B19',
+         },
+      },
    },
 
    -- tab bar

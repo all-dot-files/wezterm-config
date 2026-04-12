@@ -4,6 +4,7 @@ return {
    check_for_updates = false,
    -- exit_behavior = 'CloseOnCleanExit', -- if the shell program exited with a successful status
    exit_behavior = 'CloseOnCleanExit', -- if the shell program exited with a successful status
+   enable_kitty_keyboard = true,
 
    status_update_interval = 1000,
 

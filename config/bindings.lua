@@ -7,10 +7,12 @@ local mod = {}
 if platform.is_mac then
     mod.SUPER = 'SUPER'
     mod.SUPER_REV = 'SUPER|CTRL'
+    mod.SUPER_REV_SHIFT = 'SUPER|CTRL|SHIFT'
 elseif platform.is_win then
     mod.SUPER = 'ALT'
     -- to not conflict with Windows key shortcuts
     mod.SUPER_REV = 'ALT|CTRL'
+    mod.SUPER_REV_SHIFT = 'ALT|CTRL|SHIFT'
 end
 
 local keys = {
@@ -64,6 +66,31 @@ local keys = {
         key = 'v',
         mods = 'CMD',
         action = act.PasteFrom('Clipboard')
+    },
+    -- nvim/zsh --
+    {
+        key = 'LeftArrow',
+        mods = 'OPT',
+        action = act.SendKey({
+            key = 'b',
+            mods = 'ALT'
+        })
+    },
+    {
+        key = 'RightArrow',
+        mods = 'OPT',
+        action = act.SendKey({
+            key = 'f',
+            mods = 'ALT'
+        })
+    },
+    {
+        key = 'Backspace',
+        mods = 'OPT',
+        action = act.SendKey({
+            key = 'Backspace',
+            mods = 'ALT'
+        })
     },
     -- tabs --
     -- tabs: spawn+close
@@ -228,7 +255,7 @@ local keys = {
         action = act.ActivateKeyTable({
             name = 'resize_font',
             one_shot = false,
-            timemout_miliseconds = 1000
+            timeout_milliseconds = 1000
         })
     }, -- resize panes
     {
@@ -237,8 +264,33 @@ local keys = {
         action = act.ActivateKeyTable({
             name = 'resize_pane',
             one_shot = false,
-            timemout_miliseconds = 1000
+            timeout_milliseconds = 1000
         })
+    },
+    {
+        key = 't',
+        mods = mod.SUPER_REV_SHIFT,
+        action = act.EmitEvent('broadcast-command-to-tab')
+    },
+    {
+        key = 'w',
+        mods = mod.SUPER_REV_SHIFT,
+        action = act.EmitEvent('broadcast-command-to-window')
+    },
+    {
+        key = 's',
+        mods = mod.SUPER_REV_SHIFT,
+        action = act.EmitEvent('broadcast-command-to-selected-window')
+    },
+    {
+        key = 'b',
+        mods = mod.SUPER_REV_SHIFT,
+        action = act.EmitEvent('broadcast-command-to-selected-tabs')
+    },
+    {
+        key = 'p',
+        mods = mod.SUPER_REV_SHIFT,
+        action = act.EmitEvent('broadcast-command-to-selected-panes')
     },
     -- rename tab bar
     {
