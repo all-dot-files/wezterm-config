@@ -3,7 +3,7 @@ local colors = require('colors.custom')
 local gpu_adapters = require('utils.gpu-adapter')
 
 return {
-   term = "wezterm",
+   term = "xterm-256color",
    animation_fps = 60,
    max_fps = 60,
    front_end = 'WebGpu',
