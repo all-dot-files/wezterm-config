@@ -4,7 +4,12 @@ return {
    check_for_updates = false,
    -- exit_behavior = 'CloseOnCleanExit', -- if the shell program exited with a successful status
    exit_behavior = 'CloseOnCleanExit', -- if the shell program exited with a successful status
-   enable_kitty_keyboard = true,
+   -- 关闭 kitty keyboard，避免 Atuin TUI 兼容问题
+   enable_kitty_keyboard = false,
+
+   -- mac Option 保持输入字符，不作为 Meta
+   send_composed_key_when_left_alt_is_pressed = true,
+   send_composed_key_when_right_alt_is_pressed = true,
 
    status_update_interval = 1000,
 

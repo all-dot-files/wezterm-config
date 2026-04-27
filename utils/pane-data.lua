@@ -4,6 +4,42 @@ local M = {}
 
 local HOME = os.getenv('HOME')
 
+---@param obj any
+---@param field string
+---@return any
+local function safe_get_field(obj, field)
+   if not obj then
+      return nil
+   end
+
+   local ok, value = pcall(function()
+      return obj[field]
+   end)
+
+   if ok then
+      return value
+   end
+
+   return nil
+end
+
+---@param obj any
+---@param method string
+---@return any
+local function safe_call_method(obj, method)
+   local fn = safe_get_field(obj, method)
+   if type(fn) ~= 'function' then
+      return nil
+   end
+
+   local ok, value = pcall(fn, obj)
+   if ok then
+      return value
+   end
+
+   return nil
+end
+
 ---@param text string?
 ---@return string?
 local function normalize_text(text)
@@ -92,11 +128,17 @@ end
 ---@param pane Pane|PaneInformation
 ---@return table<string, string>
 function M.user_vars(pane)
-   if pane and pane.get_user_vars then
-      return pane:get_user_vars() or {}
+   local vars = safe_call_method(pane, 'get_user_vars')
+   if type(vars) == 'table' then
+      return vars
    end
 
-   return pane and pane.user_vars or {}
+   vars = safe_get_field(pane, 'user_vars')
+   if type(vars) == 'table' then
+      return vars
+   end
+
+   return {}
 end
 
 ---@param pane Pane|PaneInformation
@@ -104,11 +146,8 @@ end
 function M.cwd_info(pane)
    local cwd_uri
 
-   if pane and pane.get_current_working_dir then
-      cwd_uri = pane:get_current_working_dir()
-   elseif pane then
-      cwd_uri = pane.current_working_dir
-   end
+   cwd_uri = safe_call_method(pane, 'get_current_working_dir')
+      or safe_get_field(pane, 'current_working_dir')
 
    if not cwd_uri then
       return {
